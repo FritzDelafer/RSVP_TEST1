@@ -1,10 +1,17 @@
-# Wedding RSVP Demo — inspired by @maartistersvp TikTok
+# Jess & Ara Wedding — Invitation & RSVP • 12.19.2026
 
-MaArtiste-style: **only invited codes can RSVP**, so the guest list stays clean.
+Name-list entry: **only names on the guest list can RSVP** (case-insensitive).
+Guests type their name → the whole site unlocks → they confirm seats.
 
 ## Pages
-- `index.html` — public invitation + invite-code RSVP (with plus-one / family pax)
-- `admin.html` — guest list dashboard (password `admin123`, search/filter, headcount, CSV export)
+- `index.html` — envelope welcome → name gate → invitation (countdown, entourage, finer details, events, gift guide) + RSVP form
+- `admin.html` — guest list dashboard (password `admin123`): search/filter, headcount, **add/edit/delete**, CSV export
+- `apps-script/Code.gs` — Google Sheets backend (tab `GuestList`). Paste into Extensions → Apps Script, deploy as web app, put URL in `window.GAS_URL` (top of `data.js`).
+
+## Guest list format
+Sheet tab `GuestList`: `NAME | PAX | SIDE | TABLE | STATUS | ATTENDING | COMPANIONS | CONTACT | MESSAGE | UpdatedAt`
+- No codes — NAME is the key. STATUS accepts Attending/Confirmed/Declined/Pending (any case). COMPANIONS joined with `"; "`.
+- Until `GAS_URL` is set, the site runs on `localStorage` demo data (`data.js` → `SEED_GUESTS`).
 
 ## Run locally
 ```powershell
@@ -13,13 +20,7 @@ npx serve .
 # or
 python -m http.server 3000
 ```
-Open http://localhost:3000
-
-## Demo codes
-- `MA-ART-001` — Dela Cruz Family (pax 4)
-- `MA-ART-002` — Juan Santos + Guest (pax 2)
-- `MA-ART-003` — Maria Reyes (pax 1)
-- `MA-ART-007` — Aquino Family (pax 3)
+Open http://localhost:3000 — try name `Canto Family` (any casing).
 
 ## Deploy to Vercel
 Static site, no build needed.
@@ -34,4 +35,4 @@ Option B — Dashboard:
 1. Push this folder to GitHub
 2. vercel.com → Add New Project → Import repo → Deploy (framework: Other)
 
-Data is in browser `localStorage` for demo. For production, replace `loadGuests/saveGuests` with a real API (Vercel KV / Postgres / Supabase).
+Data is in browser `localStorage` until `window.GAS_URL` is set — then all devices share the Google Sheet.

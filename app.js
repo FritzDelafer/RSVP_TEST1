@@ -1,4 +1,4 @@
-const LS_KEY = "wedding-rsvp-guests-v2";
+const LS_KEY = "wedding-rsvp-guests-v3";
 const WEDDING_DATE = new Date("2026-12-19T16:00:00+08:00").getTime();
 
 function loadGuests() {
@@ -13,6 +13,7 @@ function loadGuests() {
 function saveGuests(g) { localStorage.setItem(LS_KEY, JSON.stringify(g)); }
 // case-insensitive name match: ignore case, extra spaces
 function normName(s){ return (s||"").toLowerCase().trim().replace(/\s+/g," "); }
+function findByName(list, name){ const n = normName(name); return list.findIndex(x=>normName(x.name)===n); }
 
 let guests = loadGuests();
 let current = null;
@@ -34,7 +35,8 @@ document.getElementById("guestName").addEventListener("keydown", e=>{ if(e.key==
 
 function lookup(){
   guests = loadGuests();
-  const q = normName(document.getElementById("guestName").value);
+  const raw = document.getElementById("guestName").value;
+  const q = normName(raw);
   const msg = document.getElementById("nameMsg");
   const box = document.getElementById("suggest");
   box.style.display = "none"; box.innerHTML = "";
@@ -62,12 +64,13 @@ function lookup(){
     box.style.display="block";
     return;
   }
-  msg.innerHTML = `<div class="error">Sorry, we can't find "<b>${document.getElementById("guestName").value.trim()}</b>" on the guest list. Check the spelling, or message Jess & Ara so they can add you.</div>`;
+  msg.innerHTML = `<div class="error">Sorry, we can't find "<b>${raw.trim()}</b>" on the guest list. Check the spelling, or message Jess & Ara so they can add you.</div>`;
 }
 
 // ---- lock / unlock the whole site ----
 function unlock(g){
-  current = guests.find(x=>x.code===g.code) || g;
+  const i = findByName(guests, g.name);
+  current = i>=0 ? guests[i] : g;
   document.getElementById("gateWrap").style.display="none";
   document.getElementById("siteWrap").style.display="block";
   document.getElementById("sitelinks").style.display="inline";
@@ -80,7 +83,7 @@ function unlock(g){
   document.getElementById("maxPax").textContent = current.pax;
   const sel = document.getElementById("count");
   sel.innerHTML = "";
-  for(let i=1;i<=current.pax;i++){ const o=document.createElement("option"); o.value=i; o.textContent=`${i} seat${i>1?"s":""}`; sel.appendChild(o); }
+  for(let i2=1;i2<=current.pax;i2++){ const o=document.createElement("option"); o.value=i2; o.textContent=`${i2} seat${i2>1?"s":""}`; sel.appendChild(o); }
   sel.value = Math.min(current.attending||current.pax, current.pax);
   renderCompanions();
   sel.onchange = renderCompanions;
@@ -127,7 +130,7 @@ document.getElementById("submitBtn").addEventListener("click", ()=>{
   const fmsg = document.getElementById("formMsg");
   const attend = document.querySelector('input[name="attend"]:checked').value;
   guests = loadGuests();
-  const idx = guests.findIndex(x=>x.code===current.code);
+  const idx = findByName(guests, current.name);
   if(idx<0) return;
   if(attend==="no"){
     guests[idx] = {...guests[idx], status:"declined", attending:0, companions:[],
