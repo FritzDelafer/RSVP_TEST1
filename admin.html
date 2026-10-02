@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Admin — Guest List | Miguel & Sofia</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<header class="nav"><div class="nav-inner">
+  <div class="brand">Admin <span>• Guest List</span></div>
+  <nav><a href="index.html">Invitation</a><a href="admin.html">Admin</a></nav>
+</div></header>
+<div class="wrap">
+<section>
+  <div class="card" id="loginCard">
+    <div class="kicker">MaArtiste-style admin</div>
+    <h2>Guest list dashboard</h2>
+    <p class="muted">Demo password: <b>admin123</b> (change in admin.js for real use)</p>
+    <label>Password</label>
+    <div class="row"><input id="pw" type="password" placeholder="admin123" style="max-width:280px"/><button class="btn gold" id="loginBtn">Unlock</button></div>
+    <div id="loginMsg"></div>
+  </div>
+
+  <div id="dash" style="display:none">
+    <div class="stats" id="stats"></div>
+    <div class="card" style="margin-top:16px">
+      <div class="toolbar">
+        <input id="q" placeholder="Search name / code / table..." />
+        <select id="f"><option value="">All status</option><option value="confirmed">Confirmed</option><option value="declined">Declined</option><option value="pending">Pending</option></select>
+        <button class="btn small ghost" id="exportBtn">Export CSV</button>
+        <button class="btn small ghost" id="resetBtn">Reset demo</button>
+      </div>
+      <div style="overflow:auto"><table>
+        <thead><tr><th>Code</th><th>Name</th><th>Pax</th><th>Attending</th><th>Status</th><th>Companions</th><th>Table</th><th>Action</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table></div>
+      <p class="muted" style="font-size:13px">Tip: share codes like MA-ART-001 to guests. Only those codes can RSVP — same concept as the TikTok video.</p>
+    </div>
+  </div>
+</section>
+</div>
+<script src="data.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
