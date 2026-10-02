@@ -1,4 +1,4 @@
-const LS_KEY = "wedding-rsvp-guests-v1";
+const LS_KEY = "wedding-rsvp-guests-v2";
 const ADMIN_PW = "admin123"; // change me
 function loadGuests(){
   try{ const r=localStorage.getItem(LS_KEY); if(r) return JSON.parse(r);}catch{}

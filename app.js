@@ -1,5 +1,5 @@
-const LS_KEY = "wedding-rsvp-guests-v1";
-const WEDDING_DATE = new Date("2026-12-12T15:30:00+08:00").getTime();
+const LS_KEY = "wedding-rsvp-guests-v2";
+const WEDDING_DATE = new Date("2026-12-19T16:00:00+08:00").getTime();
 
 function loadGuests() {
   try {
@@ -19,13 +19,12 @@ let current = null;
 // countdown
 function tick(){
   const d = WEDDING_DATE - Date.now();
-  if (d < 0) return;
+  const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  if (d < 0) { set("cd-d","0"); set("cd-h","0"); set("cd-m","0"); set("cd-s","0"); return; }
   const days = Math.floor(d/86400000), h = Math.floor(d%86400000/3600000),
         m = Math.floor(d%3600000/60000), s = Math.floor(d%60000/1000);
-  document.getElementById("cd-d").textContent = days;
-  document.getElementById("cd-h").textContent = h;
-  document.getElementById("cd-m").textContent = m;
-  document.getElementById("cd-s").textContent = s;
+  set("cd-d",days); set("cd-h",String(h).padStart(2,"0"));
+  set("cd-m",String(m).padStart(2,"0")); set("cd-s",String(s).padStart(2,"0"));
 }
 setInterval(tick, 1000); tick();
 
@@ -45,7 +44,7 @@ function lookup(){
   if(!code){ msg.innerHTML = `<div class="error">Please enter your invite code.</div>`; return; }
   const g = guests.find(x=>x.code===code);
   if(!g){
-    msg.innerHTML = `<div class="error">Code <b>${code}</b> not found. Only invited guests can RSVP — please check your invitation. (Demo: try MA-ART-001)</div>`;
+    msg.innerHTML = `<div class="error">Code <b>${code}</b> not found. Only invited guests can RSVP — please check your invitation. (Demo: try JA-001)</div>`;
     return;
   }
   current = g;
@@ -121,7 +120,7 @@ document.getElementById("submitBtn").addEventListener("click", ()=>{
   document.getElementById("step-done").style.display="block";
   document.getElementById("doneBox").innerHTML =
     current.status==="confirmed"
-    ? `<b>Salamat, ${current.name}!</b><br/>You confirmed <b>${current.attending} / ${current.pax}</b> seat(s). Table ${current.table}.<br/><span class="muted">Screenshot this + present your code <b>${current.code}</b> at entrance.</span>`
+    ? `<b>Salamat, ${current.name}!</b><br/>You confirmed <b>${current.attending} / ${current.pax}</b> seat(s) for Jess & Ara's wedding (12.19.2026, East Bay Residences).<br/><span class="muted">Screenshot this + present your code <b>${current.code}</b> at entrance.</span>`
     : `<b>Thank you, ${current.name}.</b><br/>You declined — your seats will be released. We'll miss you!`;
   fmsg.innerHTML="";
 });

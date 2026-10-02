@@ -3,135 +3,190 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Miguel & Sofia — Wedding Invitation & RSVP</title>
+<title>Jess & Ara — Wedding Invitation & RSVP • 12.19.2026</title>
 <link rel="stylesheet" href="styles.css" />
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
+
+<!-- Welcome envelope splash (from Canva WELCOME PAGE) -->
+<div id="welcome">
+  <p>A LOVE LETTER FROM</p>
+  <img src="assets/WELCOME%20PAGE.png" alt="Jess and Ara envelope — click to open" />
+  <button class="btn open-btn" id="openBtn">Click envelope to open</button>
+</div>
+
 <header class="nav">
   <div class="nav-inner">
-    <div class="brand">Miguel <span>&</span> Sofia</div>
+    <div class="brand"><em>JA</em></div>
     <nav>
-      <a href="#details">Details</a>
+      <a href="#home">HOME</a>
+      <a href="#entourage">ENTOURAGE</a>
+      <a href="#details">FINER DETAILS</a>
+      <a href="#events">EVENTS</a>
+      <a href="#gift">GIFT GUIDE</a>
       <a href="#rsvp">RSVP</a>
-      <a href="admin.html">Admin</a>
-      <a class="btn gold small" href="#rsvp">Confirm Seat</a>
+      <a href="admin.html">ADMIN</a>
+      <a class="btn small" href="#rsvp">Confirm Seat</a>
     </nav>
   </div>
 </header>
 
-<div class="hero">
-  <div class="wrap">
-    <div class="eyebrow">Together with their families</div>
-    <h1 class="serif">Miguel <em>&</em> Sofia</h1>
-    <p class="muted">Request the honour of your presence</p>
-    <div class="date-pill">Saturday • December 12, 2026 • 3:30 PM • Tagaytay Highlands Chapel</div>
-    <div class="countdown" id="countdown">
-      <div class="cd"><b id="cd-d">--</b><span>Days</span></div>
-      <div class="cd"><b id="cd-h">--</b><span>Hours</span></div>
-      <div class="cd"><b id="cd-m">--</b><span>Mins</span></div>
-      <div class="cd"><b id="cd-s">--</b><span>Secs</span></div>
-    </div>
-    <div class="row" style="justify-content:center">
-      <a class="btn gold" href="#rsvp">RSVP with Invite Code</a>
-      <a class="btn ghost" href="#details">View Details</a>
-    </div>
-    <p class="muted" style="font-size:13px;margin-top:12px">Minsan hindi lang “pupunta ba sila?” — invited guests lang ang makakapag-confirm, para maayos ang guest list.</p>
-  </div>
-</div>
-
 <div class="wrap">
-<section id="details" class="grid two">
-  <div class="card">
-    <div class="kicker">Ceremony</div>
-    <h2>Chapel & Reception</h2>
-    <p><b>St. Therese Chapel</b><br/>Tagaytay Highlands, 3:30 PM</p>
-    <p><b>Reception to follow</b><br/>The Lake House, 6:00 PM<br/><span class="muted">Dress code: Formal Garden • No kids except indicated in pax</span></p>
-    <div class="row">
-      <span class="pill">Entourage 2:30 PM calltime</span>
-      <span class="pill">Unplugged ceremony</span>
+
+  <div class="hero" id="home">
+    <div class="eyebrow">Together with their families, we invite you to join the wedding of</div>
+    <div class="couple">JESS PAUL<span class="and">and</span>ARA MAQHELAH</div>
+    <div class="date-script">12.19.2026</div>
+    <div><span class="date-pill">EAST BAY RESIDENCES • MUNTINLUPA CITY • 4:00 PM</span></div>
+    <div class="countdown" id="countdown">
+      <div class="cd"><b id="cd-d">--</b><span>Days</span></div><span class="sep">:</span>
+      <div class="cd"><b id="cd-h">--</b><span>Hours</span></div><span class="sep">:</span>
+      <div class="cd"><b id="cd-m">--</b><span>Minutes</span></div><span class="sep">:</span>
+      <div class="cd"><b id="cd-s">--</b><span>Seconds</span></div>
     </div>
+    <div class="music-player">
+      <button class="music-btn" id="musicBtn" aria-label="Play wedding music">▶</button>
+      <span class="music-label" id="musicLabel">Play • Safe Place</span>
+      <audio id="wedAudio" loop preload="none" src="assets/Safe%20Place.mp3"></audio>
+    </div>
+    <div class="script" style="font-size:42px;color:var(--wine)">The countdown is on!</div>
   </div>
-  <div class="card">
-    <div class="kicker">MaArtiste-style RSVP</div>
-    <h2>Bakit may invite code?</h2>
-    <p>Para mas maayos yung guest list habang papalapit yung wedding:</p>
-    <ul>
-      <li>Only invited codes can confirm — no gatecrashers</li>
-      <li>Each code has fixed <b>pax</b> (seats). Ex: Family of 4 = pax 4</li>
-      <li>Plus-one / companions must be named</li>
-      <li>Admin sees live headcount for catering & seating</li>
-    </ul>
-    <p class="muted">Demo codes: <b>MA-ART-001</b> (family), <b>MA-ART-002</b> (+1), <b>MA-ART-003</b> (solo)</p>
-  </div>
-</section>
 
-<section id="rsvp">
-  <div class="card">
-    <div class="kicker">RSVP</div>
-    <h2>Confirm your seat</h2>
-    <p class="muted">Step 1: Enter your invite code from your digital invitation. Step 2: Confirm attendance.</p>
-
-    <div id="step-code">
-      <label for="code">Invite Code</label>
-      <div class="row">
-        <input id="code" class="code-input" placeholder="MA-ART-001" autocomplete="off" />
-        <button class="btn gold" id="lookupBtn">Find Invitation</button>
-      </div>
-      <div class="demo-codes">
-        <span class="muted" style="font-size:13px">Try:</span>
-        <button data-code="MA-ART-001">MA-ART-001</button>
-        <button data-code="MA-ART-002">MA-ART-002</button>
-        <button data-code="MA-ART-003">MA-ART-003</button>
-        <button data-code="MA-ART-007">MA-ART-007</button>
-      </div>
-      <div id="codeMsg"></div>
+  <section class="block">
+    <div class="sheet">
+      <!-- Canva HOME visual: save-the-date + couple names (file is mislabeled ATTIRE.png) -->
+      <img src="assets/ATTIREHOME.png" alt="Jess and Ara — Save the Date 12.19.2026" loading="lazy" />
     </div>
+    <div class="caption">Save the Date • 12.19.2026 • East Bay Residences, Muntinlupa City</div>
+  </section>
 
-    <div id="step-form" style="display:none">
-      <div class="notice" id="guestInfo"></div>
-      <label>Will you attend?</label>
-      <div class="row">
-        <label style="font-weight:600"><input type="radio" name="attend" value="yes" checked style="width:auto" /> Joyfully Accepts</label>
-        <label style="font-weight:600"><input type="radio" name="attend" value="no" style="width:auto" /> Regretfully Declines</label>
-      </div>
-
-      <div id="attendFields">
-        <label for="count">How many seats will you use? (max <span id="maxPax">1</span>)</label>
-        <select id="count"></select>
-
-        <div id="companions"></div>
-
-        <label for="contact">Mobile / Email (for updates)</label>
-        <input id="contact" placeholder="0917-xxx-xxxx" />
-
-        <label for="message">Message to couple (optional)</label>
-        <textarea id="message" rows="3" placeholder="So excited to celebrate with you!"></textarea>
-      </div>
-
-      <div class="row" style="margin-top:16px">
-        <button class="btn gold" id="submitBtn">Submit RSVP</button>
-        <button class="btn ghost" id="backBtn">Use different code</button>
-      </div>
-      <div id="formMsg"></div>
+  <section class="block" id="entourage">
+    <div class="sec-title"><div class="script">Entourage</div></div>
+    <div class="wine-band framed">
+      <!-- Full entourage list, burgundy — direct from Canva -->
+      <img src="assets/ENTOURAGE.png" alt="Entourage — officiating minister, parents, principal and secondary sponsors" loading="lazy" />
     </div>
+    <div class="caption">Officiating minister Rev. Lito Carillo • Parents of the groom Elder Leonardo & Marianne Canto • Parents of the bride Rev. Edgar & Nida Adra — full list above.</div>
+  </section>
 
-    <div id="step-done" style="display:none">
-      <div class="success" id="doneBox"></div>
-      <div class="row" style="margin-top:12px">
-        <button class="btn ghost" id="againBtn">RSVP another code</button>
-        <a class="btn" href="admin.html">View Admin Demo</a>
+  <section class="block" id="details">
+    <div class="sec-title"><div class="script">Finer</div><div class="serif">DETAILS</div></div>
+    <div class="palette">
+      <span class="dot" style="background:#9d6b7a" title="Mauve"></span>
+      <span class="dot" style="background:#e8b4b8" title="Blush"></span>
+      <span class="dot" style="background:#6d0d1b" title="Burgundy"></span>
+      <span class="dot" style="background:#e8d9bd" title="Beige"></span>
+    </div>
+    <div class="sheet">
+      <!-- Attire guide + gift guide + order of events -->
+      <img src="assets/FINER%20DETAILS.png" alt="Attire guide, gift guide and order of events" loading="lazy" />
+    </div>
+    <div class="caption">Attire: burgundy • blush • mauve • beige. White is strictly reserved for the bride. Gift guide QRs (BDO / Maribank / GoTyme) above.</div>
+  </section>
+
+  <section class="block" id="events">
+    <div class="sec-title"><div class="serif">ORDER <span class="script" style="letter-spacing:0">of</span> EVENTS</div></div>
+    <div class="sheet">
+      <img src="assets/FAQs.png" alt="Order of events timeline: ceremony 4PM to send-off 9:30PM" loading="lazy" />
+    </div>
+    <div class="caption">Ceremony 4PM • Photo session 5:30PM • Cocktail hour 6PM • Dinner 8PM • First dance 8:30PM • Cake cutting 8:45PM • Toast + speeches 9PM • Send-off 9:30PM</div>
+  </section>
+
+  <section class="block" id="gift">
+    <div class="wine-band framed">
+      <img src="assets/giftguide.png" alt="Gift Guide — BDO, Maribank, GoTyme" loading="lazy" />
+    </div>
+    <div class="caption">Your presence is the greatest gift — monetary gifts via BDO / Maribank / GoTyme if you wish.</div>
+  </section>
+
+  <section class="block" id="rsvp">
+    <div class="sheet" style="padding:26px">
+      <img src="assets/RSVP.png" alt="RSVP" style="max-width:420px;margin:0 auto" loading="lazy" />
+      <h2 class="rs" style="display:none">RSVP</h2>
+      <p class="muted" style="text-align:center">Only invited guests with a code can confirm. Find your code on your invitation.</p>
+
+      <div id="step-code">
+        <label for="code">Invite Code</label>
+        <div class="row">
+          <input id="code" class="code-input" placeholder="JA-001" autocomplete="off" />
+          <button class="btn" id="lookupBtn">Find Invitation</button>
+        </div>
+        <div class="demo-codes">
+          <span class="muted" style="font-size:13px">Try:</span>
+          <button data-code="JA-001">JA-001</button>
+          <button data-code="JA-002">JA-002</button>
+          <button data-code="JA-003">JA-003</button>
+          <button data-code="JA-007">JA-007</button>
+        </div>
+        <div id="codeMsg"></div>
+      </div>
+
+      <div id="step-form" style="display:none">
+        <div class="notice" id="guestInfo"></div>
+        <label>Will you attend?</label>
+        <div class="row">
+          <label style="font-weight:500"><input type="radio" name="attend" value="yes" checked style="width:auto" /> Joyfully Accepts</label>
+          <label style="font-weight:500"><input type="radio" name="attend" value="no" style="width:auto" /> Regretfully Declines</label>
+        </div>
+        <div id="attendFields">
+          <label for="count">How many seats will you use? (max <span id="maxPax">1</span>)</label>
+          <select id="count"></select>
+          <div id="companions"></div>
+          <label for="contact">Mobile / Email (for updates)</label>
+          <input id="contact" placeholder="0917-xxx-xxxx" />
+          <label for="message">Message to couple (optional)</label>
+          <textarea id="message" rows="3" placeholder="So excited to celebrate with you!"></textarea>
+        </div>
+        <div class="row" style="margin-top:16px">
+          <button class="btn" id="submitBtn">Submit RSVP</button>
+          <button class="btn ghost" id="backBtn">Use different code</button>
+        </div>
+        <div id="formMsg"></div>
+      </div>
+
+      <div id="step-done" style="display:none">
+        <div class="success" id="doneBox"></div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn ghost" id="againBtn">RSVP another code</button>
+          <a class="btn ghost" href="admin.html">View Admin Demo</a>
+        </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<footer>
-  Made with ♥ demo inspired by @maartistersvp TikTok • Deploy-ready for Vercel • Data stored in browser localStorage for demo
-</footer>
+  <footer>
+    JESS PAUL & ARA MAQHELAH • 12.19.2026 • East Bay Residences, Muntinlupa City<br/>
+    <span class="muted">Design from Canva assets • Invite-code RSVP demo • Data stored in browser localStorage</span>
+  </footer>
 </div>
 
 <script src="data.js"></script>
 <script src="app.js"></script>
+<script>
+  // envelope splash + music (starts on open tap, browsers require a gesture)
+  const w = document.getElementById('welcome');
+  const wedAudio = document.getElementById('wedAudio');
+  const musicBtn = document.getElementById('musicBtn');
+  const musicLabel = document.getElementById('musicLabel');
+  function setMusicUI(playing){
+    musicBtn.textContent = playing ? '❚❚' : '▶';
+    musicBtn.setAttribute('aria-label', playing ? 'Pause wedding music' : 'Play wedding music');
+    musicLabel.textContent = playing ? 'Playing • Safe Place' : 'Play • Safe Place';
+  }
+  function openInvite(){
+    w.classList.add('hidden');
+    if (wedAudio && wedAudio.paused) {
+      wedAudio.play().then(()=>setMusicUI(true)).catch(()=>setMusicUI(false));
+    }
+  }
+  document.getElementById('openBtn').addEventListener('click', openInvite);
+  w.querySelector('img').addEventListener('click', openInvite);
+  musicBtn.addEventListener('click', ()=>{
+    if (!wedAudio) return;
+    if (wedAudio.paused) { wedAudio.play().then(()=>setMusicUI(true)).catch(()=>{}); }
+    else { wedAudio.pause(); setMusicUI(false); }
+  });
+</script>
 </body>
 </html>
