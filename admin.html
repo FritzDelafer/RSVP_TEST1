@@ -30,12 +30,34 @@
         <select id="f"><option value="">All status</option><option value="confirmed">Confirmed</option><option value="declined">Declined</option><option value="pending">Pending</option></select>
         <button class="btn small ghost" id="exportBtn">Export CSV</button>
         <button class="btn small ghost" id="resetBtn">Reset demo</button>
+        <button class="btn small" id="addBtn">+ Add Guest</button>
       </div>
       <div style="overflow:auto"><table>
         <thead><tr><th>Code</th><th>Name</th><th>Pax</th><th>Attending</th><th>Status</th><th>Companions</th><th>Table</th><th>Action</th></tr></thead>
         <tbody id="rows"></tbody>
       </table></div>
       <p class="muted" style="font-size:13px">Tip: share codes like JA-001 to guests. Only those codes can RSVP.</p>
+    </div>
+  </div>
+
+  <!-- Add / Edit guest modal -->
+  <div id="modal" style="display:none;position:fixed;inset:0;background:rgba(58,13,20,.55);z-index:50;align-items:center;justify-content:center;padding:16px">
+    <div class="card" style="width:min(480px,94vw);max-height:90vh;overflow:auto">
+      <div class="kicker" id="mTitle">Add guest</div>
+      <label>Invite Code (unique, uppercase)</label>
+      <input id="mCode" placeholder="JA-009" autocomplete="off" />
+      <label>Guest / Family Name</label>
+      <input id="mName" placeholder="Reyes Family" />
+      <div class="row">
+        <div style="flex:1;min-width:100px"><label>Max seats (pax)</label><input id="mPax" type="number" min="1" max="20" value="2" /></div>
+        <div style="flex:1;min-width:100px"><label>Side</label><select id="mSide"><option>Bride</option><option>Groom</option><option>Both</option></select></div>
+        <div style="flex:1;min-width:100px"><label>Table</label><input id="mTable" placeholder="T-09" /></div>
+      </div>
+      <div id="mMsg"></div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn" id="mSave">Save Guest</button>
+        <button class="btn ghost" id="mCancel">Cancel</button>
+      </div>
     </div>
   </div>
 </section>

@@ -55,11 +55,17 @@ function render(){
       <td style="font-size:13px">${(g.companions||[]).join(", ")||"—"}</td>
       <td>${g.table||""}</td><td></td>`;
     const td=tr.lastChild;
-    const btn=document.createElement("button");
-    btn.className="btn small ghost"; btn.textContent="Reset to pending";
-    btn.onclick=()=>{ const all=loadGuests(); const i=all.findIndex(x=>x.code===g.code);
-      all[i]={...all[i],status:"pending",attending:0,companions:[],message:"",updatedAt:null}; save(all); render(); };
-    td.appendChild(btn);
+    td.style.whiteSpace="nowrap";
+    const mk=(label,fn)=>{
+      const b=document.createElement("button");
+      b.className="btn small ghost"; b.textContent=label; b.style.marginRight="6px";
+      b.onclick=fn; td.appendChild(b);
+    };
+    mk("Edit",()=>openModal(g.code));
+    mk("Reset",()=>{ const all=loadGuests(); const i=all.findIndex(x=>x.code===g.code);
+      all[i]={...all[i],status:"pending",attending:0,companions:[],message:"",updatedAt:null}; save(all); render(); });
+    mk("Delete",()=>{ if(!confirm(`Delete ${g.code} — ${g.name}? Guests with this code will no longer be able to RSVP.`)) return;
+      save(loadGuests().filter(x=>x.code!==g.code)); render(); });
     rows.appendChild(tr);
   });
 }
@@ -73,4 +79,48 @@ document.getElementById("exportBtn").onclick=()=>{
 document.getElementById("resetBtn").onclick=()=>{
   if(!confirm("Reset demo data?")) return;
   localStorage.setItem(LS_KEY, JSON.stringify(structuredClone(window.SEED_GUESTS))); render();
+};
+
+// ---- Add / Edit guest ----
+let editingCode = null;
+const modal = document.getElementById("modal");
+function openModal(code){
+  editingCode = code || null;
+  const all = loadGuests();
+  const g = code ? all.find(x=>x.code===code) : null;
+  document.getElementById("mTitle").textContent = g ? `Edit ${g.code}` : "Add guest";
+  const codeInput = document.getElementById("mCode");
+  codeInput.value = g ? g.code : "";
+  codeInput.disabled = !!g;
+  document.getElementById("mName").value = g ? g.name : "";
+  document.getElementById("mPax").value = g ? g.pax : 2;
+  document.getElementById("mSide").value = g ? g.side : "Bride";
+  document.getElementById("mTable").value = g ? (g.table||"") : "";
+  document.getElementById("mMsg").innerHTML = "";
+  modal.style.display = "flex";
+}
+function closeModal(){ modal.style.display = "none"; editingCode = null; }
+document.getElementById("addBtn").onclick = ()=>openModal(null);
+document.getElementById("mCancel").onclick = closeModal;
+modal.addEventListener("click", e=>{ if(e.target===modal) closeModal(); });
+document.getElementById("mSave").onclick = ()=>{
+  const msg = document.getElementById("mMsg");
+  const code = (document.getElementById("mCode").value||"").trim().toUpperCase().replace(/\s+/g,"");
+  const name = (document.getElementById("mName").value||"").trim();
+  const pax = Math.max(1, Math.min(20, parseInt(document.getElementById("mPax").value,10)||0));
+  const side = document.getElementById("mSide").value;
+  const table = (document.getElementById("mTable").value||"").trim();
+  if(!code || !name){ msg.innerHTML = `<div class="error">Code and name are required.</div>`; return; }
+  const all = loadGuests();
+  if(editingCode){
+    const i = all.findIndex(x=>x.code===editingCode);
+    if(i<0) return;
+    all[i] = {...all[i], name, pax, side, table,
+      attending: Math.min(all[i].attending||0, pax),
+      companions: (all[i].companions||[]).slice(0, Math.max(0, pax-1))};
+  } else {
+    if(all.some(x=>x.code===code)){ msg.innerHTML = `<div class="error">Code <b>${code}</b> already exists — pick another.</div>`; return; }
+    all.push({ code, name, pax, side, table, status:"pending", attending:0, companions:[], contact:"", message:"", updatedAt:null });
+  }
+  save(all); closeModal(); render();
 };
