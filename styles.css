@@ -92,3 +92,10 @@ footer{padding:40px 0 60px;text-align:center;color:var(--muted);font-size:13px}
 .toolbar input,.toolbar select{width:auto;flex:1;min-width:160px}
 .palette{display:flex;gap:10px;justify-content:center;margin:8px 0}
 .dot{width:34px;height:34px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+/* invitation gate — only thing visible before name match */
+.gate-card{max-width:620px;margin:34px auto;padding:30px 26px}
+.gate-title{text-align:center;font-size:clamp(42px,7vw,64px);color:var(--wine);line-height:1.1}
+.gate-row input{flex:3;min-width:200px;font-size:17px}
+.gate-row .btn{flex:1;white-space:nowrap}
+.suggest-btn{display:block;width:100%;text-align:left;margin-top:8px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:13px 14px;cursor:pointer;font-weight:600;font-size:16px;color:var(--wine);font-family:inherit}
+.suggest-btn:hover{border-color:var(--wine);background:#fdf6ee}

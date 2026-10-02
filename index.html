@@ -20,19 +20,36 @@
   <div class="nav-inner">
     <div class="brand"><em>JA</em></div>
     <nav>
+      <span id="sitelinks" style="display:none">
       <a href="#home">HOME</a>
       <a href="#entourage">ENTOURAGE</a>
       <a href="#details">FINER DETAILS</a>
       <a href="#events">EVENTS</a>
       <a href="#gift">GIFT GUIDE</a>
       <a href="#rsvp">RSVP</a>
+      </span>
       <a href="admin.html">ADMIN</a>
-      <a class="btn small" href="#rsvp">Confirm Seat</a>
     </nav>
   </div>
 </header>
 
-<div class="wrap">
+<div class="wrap" id="gateWrap">
+  <section class="block" id="gate">
+    <div class="sheet gate-card">
+      <div class="script gate-title">Find Your Invitation</div>
+      <p class="muted" style="text-align:center;margin-top:0">For invited guests only — type your name below.<br/>Small or BIG letters, both work.</p>
+      <label for="guestName">Your Name (as on the guest list)</label>
+      <div class="row gate-row">
+        <input id="guestName" placeholder="e.g. Canto Family" autocomplete="off" />
+        <button class="btn" id="lookupBtn">Find My Invitation</button>
+      </div>
+      <div id="nameMsg"></div>
+      <div id="suggest" style="display:none"></div>
+    </div>
+  </section>
+</div>
+
+<div class="wrap" id="siteWrap" style="display:none">
 
   <div class="hero" id="home">
     <div class="eyebrow">Together with their families, we invite you to join the wedding of</div>
@@ -104,23 +121,7 @@
     <div class="sheet" style="padding:26px">
       <img src="assets/RSVP.png" alt="RSVP" style="max-width:420px;margin:0 auto" loading="lazy" />
       <h2 class="rs" style="display:none">RSVP</h2>
-      <p class="muted" style="text-align:center">Only invited guests with a code can confirm. Find your code on your invitation.</p>
-
-      <div id="step-code">
-        <label for="code">Invite Code</label>
-        <div class="row">
-          <input id="code" class="code-input" placeholder="JA-001" autocomplete="off" />
-          <button class="btn" id="lookupBtn">Find Invitation</button>
-        </div>
-        <div class="demo-codes">
-          <span class="muted" style="font-size:13px">Try:</span>
-          <button data-code="JA-001">JA-001</button>
-          <button data-code="JA-002">JA-002</button>
-          <button data-code="JA-003">JA-003</button>
-          <button data-code="JA-007">JA-007</button>
-        </div>
-        <div id="codeMsg"></div>
-      </div>
+      <p class="muted" style="text-align:center">Confirm your seats below. Only names on the guest list can RSVP.</p>
 
       <div id="step-form" style="display:none">
         <div class="notice" id="guestInfo"></div>
@@ -140,7 +141,7 @@
         </div>
         <div class="row" style="margin-top:16px">
           <button class="btn" id="submitBtn">Submit RSVP</button>
-          <button class="btn ghost" id="backBtn">Use different code</button>
+          <button class="btn ghost" id="backBtn">Not you? Search again</button>
         </div>
         <div id="formMsg"></div>
       </div>
@@ -148,7 +149,7 @@
       <div id="step-done" style="display:none">
         <div class="success" id="doneBox"></div>
         <div class="row" style="margin-top:12px">
-          <button class="btn ghost" id="againBtn">RSVP another code</button>
+          <button class="btn ghost" id="againBtn">Search another name</button>
           <a class="btn ghost" href="admin.html">View Admin Demo</a>
         </div>
       </div>
@@ -157,7 +158,7 @@
 
   <footer>
     JESS PAUL & ARA MAQHELAH • 12.19.2026 • East Bay Residences, Muntinlupa City<br/>
-    <span class="muted">Design from Canva assets • Invite-code RSVP demo • Data stored in browser localStorage</span>
+    <span class="muted">Design from Canva assets • Guest-list RSVP • Data stored in browser localStorage</span>
   </footer>
 </div>
 
