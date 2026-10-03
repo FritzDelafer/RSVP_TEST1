@@ -184,21 +184,6 @@ function render(){
     rows.appendChild(tr);
   });
 }
-document.getElementById("exportBtn").onclick=()=>{
-  const guests=cache;
-  const q = v=>`"${String(v == null ? "" : v).replace(/"/g,'""')}"`;
-  const csv=["CODE,NAME,PAX,SIDE,TABLE,STATUS,COMPANIONS,CONTACT,MESSAGE",
-    ...guests.map(g=>[g.code,q(g.name),g.pax,g.side,q(g.table),statusLabel(g.status),q((g.companions||[]).join("; ")),q(g.contact),q(g.message)].join(","))].join("\n");
-  const blob=new Blob([csv],{type:"text/csv"});
-  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="guest-list.csv"; a.click();
-};
-document.getElementById("resetBtn").onclick=async ()=>{
-  if(useGas()){ alert("Live mode: Reset demo is disabled. Edit or delete rows in the Sheet / dashboard instead."); return; }
-  if(!confirm("Reset demo data?")) return;
-  const fresh=structuredClone(window.SEED_GUESTS).map(normalizeGuest);
-  localStorage.setItem(LS_KEY, JSON.stringify(fresh)); cache=fresh; render();
-};
-
 // ---- Add / Edit guest (CODE is the key) — mirrors all 9 sheet columns ----
 let editingCode = null;
 const modal = document.getElementById("modal");
