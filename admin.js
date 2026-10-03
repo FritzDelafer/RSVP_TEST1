@@ -34,11 +34,16 @@ function save(g){ localStorage.setItem(LS_KEY, JSON.stringify(g)); }
 function normName(s){ return (s||"").toLowerCase().trim().replace(/\s+/g," "); }
 function findByCode(list, code){ const n=normCode(code); return list.findIndex(x=>normCode(x.code)===n); }
 function seatsUsed(g){
-  if(window.seatsUsed) return window.seatsUsed(g);
+  // local-only: this function IS window.seatsUsed, so never delegate to it.
   if(!g) return 0;
-  const s=(g.status||"").toLowerCase();
+  const s=String(g.status||"").toLowerCase();
   if(s==="declined") return 0;
-  if(s==="attending"||s==="confirmed") return 1+((g.companions||[]).length);
+  if(s==="attending"||s==="confirmed"){
+    const comps = Array.isArray(g.companions)
+      ? g.companions
+      : String(g.companions || "").split(/[;,\n]+/).map(c=>c.trim()).filter(Boolean);
+    return 1+comps.length;
+  }
   return 0;
 }
 const useGas = ()=> !!(window.usingGas && window.usingGas());
