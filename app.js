@@ -95,17 +95,33 @@ async function lookup(){
 }
 
 // ---- lock / unlock the whole site ----
+function asCompanions(v){
+  if(Array.isArray(v)) return v.map(c=>String(c).trim()).filter(Boolean);
+  if(v == null) return [];
+  return String(v).split(/[;,\n]+/).map(c=>c.trim()).filter(Boolean);
+}
 function seatsUsed(g){
-  if(window.seatsUsed) return window.seatsUsed(g);
   if(!g) return 0;
   const s=(g.status||"").toLowerCase();
   if(s==="declined") return 0;
-  if(s==="attending"||s==="confirmed") return 1+((g.companions||[]).length);
+  if(s==="attending"||s==="confirmed") return 1+(asCompanions(g.companions).length);
   return 0;
 }
 function unlock(g){
-  const i = findByName(guests, g.name);
-  current = i>=0 ? guests[i] : g;
+  // Normalize + prefer fresh data (GAS sheet) over stale localStorage cache
+  const fresh = {...(g||{}),
+    pax: Math.max(1, parseInt(g && g.pax, 10) || 1),
+    companions: asCompanions(g && g.companions),
+    contact: (g && g.contact) || "",
+    message: (g && g.message) || ""};
+  const i = findByName(guests, fresh.name);
+  if(window.usingGas && window.usingGas()){
+    current = fresh;
+    // keep local cache in sync so back/search still works offline
+    if(i>=0){ guests[i] = {...guests[i], ...fresh}; try{ saveGuests(guests); }catch{} }
+  } else {
+    current = i>=0 ? {...guests[i], companions: asCompanions(guests[i].companions)} : fresh;
+  }
   document.getElementById("gateWrap").style.display="none";
   document.getElementById("siteWrap").style.display="block";
   document.getElementById("sitelinks").style.display="inline";
@@ -146,17 +162,23 @@ function lock(){
 }
 
 function renderCompanions(){
-  const n = parseInt(document.getElementById("count").value||"1",10);
+  const sel = document.getElementById("count");
+  const n = parseInt((sel && sel.value) || "1", 10);
   const box = document.getElementById("companions");
+  // preserve what the user already typed when they change the dropdown
+  const typed = [...box.querySelectorAll("[data-comp]")].map(i=>i.value.trim());
+  const saved = asCompanions(current && current.companions);
   box.innerHTML = "";
   if(n<=1){ box.innerHTML = `<p class="muted" style="font-size:13px">Solo seat — no companions needed.</p>`; return; }
+  // n seats = 1 guest + (n-1) companion inputs. Pre-fill from sheet, else keep typed.
   box.innerHTML = `<label>Companion names (${n-1} needed)</label>`;
   for(let i=0;i<n-1;i++){
     const inp = document.createElement("input");
     inp.placeholder = `Companion ${i+1} full name`;
     inp.dataset.comp = i;
     inp.style.marginBottom = "8px";
-    if(current.companions && current.companions[i]) inp.value = current.companions[i];
+    inp.autocomplete = "off";
+    inp.value = typed[i] || saved[i] || "";
     box.appendChild(inp);
   }
 }
