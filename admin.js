@@ -181,6 +181,7 @@ function render(){
       }
       const next=loadGuests().filter(x=>normCode(x.code)!==normCode(g.code)); save(next); cache=next; render();
     });
+    rows.appendChild(tr);
   });
 }
 document.getElementById("exportBtn").onclick=()=>{
