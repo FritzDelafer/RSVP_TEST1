@@ -36,15 +36,14 @@
 <div class="wrap" id="gateWrap">
   <section class="block" id="gate">
     <div class="sheet gate-card">
-      <div class="script gate-title">Find Your Invitation</div>
-      <p class="muted" style="text-align:center;margin-top:0">For invited guests only — type your name below.<br/>Small or BIG letters, both work.</p>
-      <label for="guestName">Your Name (as on the guest list)</label>
+      <div class="script gate-title">Enter Your Code</div>
+      <p class="muted" style="text-align:center;margin-top:0">For invited guests only — enter the code from your invitation.<br/>Letters or numbers, big or small — dashes don't matter.</p>
+      <label for="guestCode">Your Invitation Code</label>
       <div class="row gate-row">
-        <input id="guestName" placeholder="e.g. Canto Family" autocomplete="off" />
+        <input id="guestCode" placeholder="e.g. CF4-K7P" autocomplete="off" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase" />
         <button class="btn" id="lookupBtn">Find My Invitation</button>
       </div>
       <div id="nameMsg"></div>
-      <div id="suggest" style="display:none"></div>
     </div>
   </section>
 </div>
@@ -121,7 +120,7 @@
     <div class="sheet" style="padding:26px">
       <img src="assets/RSVP.png" alt="RSVP" style="max-width:420px;margin:0 auto" loading="lazy" />
       <h2 class="rs" style="display:none">RSVP</h2>
-      <p class="muted" style="text-align:center">Confirm your seats below. Only names on the guest list can RSVP.</p>
+      <p class="muted" style="text-align:center">Confirm your seats below. Only invited codes can RSVP.</p>
 
       <div id="step-form" style="display:none">
         <div class="notice" id="guestInfo"></div>
@@ -158,7 +157,7 @@
 
   <footer>
     JESS PAUL & ARA MAQHELAH • 12.19.2026 • East Bay Residences, Muntinlupa City<br/>
-    <span class="muted">Design from Canva assets • Guest-list RSVP • Data stored in browser localStorage</span>
+    <span class="muted">Design from Canva assets • Code-entry RSVP • Data stored in browser localStorage</span>
   </footer>
 </div>
 

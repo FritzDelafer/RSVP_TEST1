@@ -1,4 +1,4 @@
-const LS_KEY = "wedding-rsvp-guests-v4";
+const LS_KEY = "wedding-rsvp-guests-v5";
 const WEDDING_DATE = new Date("2026-12-19T16:00:00+08:00").getTime();
 
 function loadGuests() {
@@ -11,9 +11,12 @@ function loadGuests() {
   return seed;
 }
 function saveGuests(g) { localStorage.setItem(LS_KEY, JSON.stringify(g)); }
-// case-insensitive name match: ignore case, extra spaces
-function normName(s){ return (s||"").toLowerCase().trim().replace(/\s+/g," "); }
-function findByName(list, name){ const n = normName(name); return list.findIndex(x=>normName(x.name)===n); }
+// invitation-code match: uppercase, ignore dashes/spaces
+function normCode(s){
+  if(window.normCode) return window.normCode(s);
+  return String(s == null ? "" : s).toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+function findByCode(list, code){ const n = normCode(code); return list.findIndex(x=>normCode(x.code)===n); }
 
 let guests = loadGuests();
 let current = null;
@@ -31,35 +34,21 @@ function tick(){
 setInterval(tick, 1000); tick();
 
 document.getElementById("lookupBtn").addEventListener("click", lookup);
-document.getElementById("guestName").addEventListener("keydown", e=>{ if(e.key==="Enter") lookup(); });
+document.getElementById("guestCode").addEventListener("keydown", e=>{ if(e.key==="Enter") lookup(); });
 
 async function lookup(){
-  const raw = document.getElementById("guestName").value;
-  const q = normName(raw);
+  const raw = document.getElementById("guestCode").value;
+  const q = normCode(raw);
   const msg = document.getElementById("nameMsg");
-  const box = document.getElementById("suggest");
-  box.style.display = "none"; box.innerHTML = "";
-  if(!q){ msg.innerHTML = `<div class="error">Please type your name.</div>`; return; }
+  if(!q){ msg.innerHTML = `<div class="error">Please enter your invitation code.</div>`; return; }
 
   // Live mode: query Google Sheet via GAS (source of truth when deployed)
   if(window.usingGas && window.usingGas()){
     msg.innerHTML = `<div class="notice">Finding your invitation…</div>`;
     try{
-      const res = await window.gasGet({ action: "lookup", name: raw.trim() });
-      if(res && res.ok && res.match === "exact" && res.guest){ msg.innerHTML=""; unlock(res.guest); return; }
-      if(res && res.ok && res.match === "close" && res.guests && res.guests.length){
-        if(res.guests.length === 1){ msg.innerHTML=""; unlock(res.guests[0]); return; }
-        msg.innerHTML = `<div class="notice">We found similar names — tap yours:</div>`;
-        res.guests.forEach(g=>{
-          const b=document.createElement("button");
-          b.className="suggest-btn"; b.textContent=g.name;
-          b.onclick=()=>unlock(g);
-          box.appendChild(b);
-        });
-        box.style.display="block";
-        return;
-      }
-      msg.innerHTML = `<div class="error">Sorry, we can't find "<b>${raw.trim()}</b>" on the guest list. Check the spelling, or message Jess & Ara so they can add you.</div>`;
+      const res = await window.gasGet({ action: "lookup", code: raw.trim() });
+      if(res && res.ok && res.guest){ msg.innerHTML=""; unlock(res.guest); return; }
+      msg.innerHTML = `<div class="error">Sorry, we can't find code "<b>${raw.trim().toUpperCase()}</b>". Check the code on your invitation, or message Jess & Ara.</div>`;
       return;
     }catch(err){
       console.warn("GAS lookup failed, falling back to local:", err);
@@ -69,29 +58,11 @@ async function lookup(){
 
   guests = loadGuests();
 
-  // 1) exact match (case-insensitive)
-  const exact = guests.find(x=>normName(x.name)===q);
+  // exact code match only (no suggestions — codes don't enumerate names)
+  const exact = guests.find(x=>normCode(x.code)===q);
   if(exact){ msg.innerHTML=""; unlock(exact); return; }
 
-  // 2) close matches — name contains what they typed, or vice versa
-  const close = guests.filter(x=>{
-    const n = normName(x.name);
-    return q.length>=3 && (n.includes(q) || q.includes(n));
-  }).slice(0,5);
-
-  if(close.length===1){ msg.innerHTML=""; unlock(close[0]); return; }
-  if(close.length>1){
-    msg.innerHTML = `<div class="notice">We found similar names — tap yours:</div>`;
-    close.forEach(g=>{
-      const b=document.createElement("button");
-      b.className="suggest-btn"; b.textContent=g.name;
-      b.onclick=()=>unlock(g);
-      box.appendChild(b);
-    });
-    box.style.display="block";
-    return;
-  }
-  msg.innerHTML = `<div class="error">Sorry, we can't find "<b>${raw.trim()}</b>" on the guest list. Check the spelling, or message Jess & Ara so they can add you.</div>`;
+  msg.innerHTML = `<div class="error">Sorry, we can't find code "<b>${raw.trim().toUpperCase()}</b>". Check the code on your invitation, or message Jess & Ara.</div>`;
 }
 
 // ---- lock / unlock the whole site ----
@@ -108,13 +79,16 @@ function seatsUsed(g){
   return 0;
 }
 function unlock(g){
-  // Normalize + prefer fresh data (GAS sheet) over stale localStorage cache
+  // Normalize + prefer fresh data (GAS sheet) over stale localStorage cache.
+  // CODE is the key — names can change freely.
   const fresh = {...(g||{}),
+    code: String((g && g.code) || "").trim().toUpperCase(),
+    name: String((g && g.name) || "").trim(),
     pax: Math.max(1, parseInt(g && g.pax, 10) || 1),
     companions: asCompanions(g && g.companions),
     contact: (g && g.contact) || "",
     message: (g && g.message) || ""};
-  const i = findByName(guests, fresh.name);
+  const i = findByCode(guests, fresh.code);
   if(window.usingGas && window.usingGas()){
     current = fresh;
     // keep local cache in sync so back/search still works offline
@@ -155,9 +129,8 @@ function lock(){
   document.getElementById("siteWrap").style.display="none";
   document.getElementById("sitelinks").style.display="none";
   document.getElementById("gateWrap").style.display="block";
-  document.getElementById("guestName").value="";
+  document.getElementById("guestCode").value="";
   document.getElementById("nameMsg").innerHTML="";
-  const box=document.getElementById("suggest"); box.style.display="none"; box.innerHTML="";
   window.scrollTo({top:0, behavior:"smooth"});
 }
 
@@ -215,13 +188,14 @@ document.getElementById("submitBtn").addEventListener("click", async ()=>{
     }
   }
 
-  // Live mode: write to Google Sheet (8 cols: NAME|PAX|SIDE|TABLE|STATUS|COMPANIONS|CONTACT|MESSAGE)
+  // Live mode: write to Google Sheet (CODE is the key)
   if(window.usingGas && window.usingGas()){
     const btn = document.getElementById("submitBtn");
     btn.disabled = true; btn.textContent = "Sending…";
     try{
       const res = await window.gasPost({
         action: "rsvp",
+        code: current.code,
         name: current.name,
         status: attend === "no" ? "declined" : "attending",
         companions: comps,
@@ -243,7 +217,7 @@ document.getElementById("submitBtn").addEventListener("click", async ()=>{
   }
 
   guests = loadGuests();
-  const idx = findByName(guests, current.name);
+  const idx = findByCode(guests, current.code);
   if(idx<0) return;
   if(attend==="no"){
     guests[idx] = {...guests[idx], status:"declined", companions:[],

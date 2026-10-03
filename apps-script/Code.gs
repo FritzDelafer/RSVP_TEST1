@@ -1,20 +1,25 @@
 /**
- * Jess & Ara Wedding RSVP — Google Sheets backend.
+ * Jess & Ara Wedding RSVP — Google Sheets backend (CODE entry).
  *
- * SETUP (one time):
+ * SETUP (one time, or when upgrading from name-entry):
  * 1. Open your spreadsheet → Extensions → Apps Script.
  * 2. Delete everything in Code.gs → paste this whole file → Save (Ctrl+S).
- * 3. Pick function "setup" → Run once → authorize. This resets tab
- *    "GuestList" headers to the 8 canonical columns and deletes stray
- *    columns (e.g. repeated UpdatedAt / ATTENDING).
- * 4. Make sure row 2+ matches: NAME | PAX | SIDE | TABLE | STATUS | COMPANIONS | CONTACT | MESSAGE
- *    Example: Ma. Pauline Canto | 2 | Bride | Table 1 | Attending | John Fritz Delafer | 9123123123 | yeahhh
+ * 3. In the SHEET tab "GuestList": make sure row 1 has a CODE column.
+ *    Easiest: insert a new column A, put "CODE" in A1, and fill one code
+ *    per guest (e.g. CF4-K7P). Canonical order:
+ *    CODE | NAME | PAX | SIDE | TABLE | STATUS | COMPANIONS | CONTACT | MESSAGE
+ *    (Column order is flexible — the script maps by header name. Codes are
+ *    matched case-insensitively, dashes/spaces ignored.)
+ * 4. Pick function "setup" → Run once → authorize. This adds any missing
+ *    headers without touching your data.
  * 5. Deploy → New deployment → Web app (Execute as: Me, Who has access: Anyone)
- *    → copy URL ending in /exec → paste as window.GAS_URL.
+ *    → copy URL ending in /exec → paste as window.GAS_URL in data.js.
+ *    (Redeploy → New version after every Code.gs change.)
  *
  * Sheet tab: "GuestList"
- * Columns (8): NAME | PAX | SIDE | TABLE | STATUS | COMPANIONS | CONTACT | MESSAGE
- * - Lookup is case-insensitive. STATUS accepts Attending/Confirmed/Yes (=attending),
+ * Columns (9): CODE | NAME | SIDE... (see HEADERS below)
+ * - CODE is the key. Lookup is code-only (no name suggestions — names can't
+ *   be enumerated). STATUS accepts Attending/Confirmed/Yes (=attending),
  *   Declined/No (=declined), anything else (=pending). Stored as Attending/Declined/Pending.
  * - COMPANIONS: one or more names joined with "; " (e.g. "Juan; Maria").
  * - Seats used = 1 + companions count when Attending, 0 when Declined.
@@ -22,10 +27,11 @@
  */
 
 const TAB_NAME = "GuestList";
-const HEADERS = ["NAME","PAX","SIDE","TABLE","STATUS","COMPANIONS","CONTACT","MESSAGE"];
+const HEADERS = ["CODE","NAME","PAX","SIDE","TABLE","STATUS","COMPANIONS","CONTACT","MESSAGE"];
 const ADMIN_KEY = ""; // optional: set e.g. "ja-secret-2026", then admin calls must send it
 
 function norm_(s){ return String(s == null ? "" : s).toLowerCase().trim().replace(/\s+/g, " "); }
+function normCode_(s){ return String(s == null ? "" : s).toUpperCase().replace(/[^A-Z0-9]/g, ""); }
 function normHeader_(s){ return norm_(s).toUpperCase().replace(/[^A-Z]/g, ""); }
 
 function sheet_(){
@@ -72,6 +78,7 @@ function writeStatus_(s){
 function rowToGuest_(map, vals){
   const at = h => (map[h] >= 0 ? vals[map[h]] : "");
   return {
+    code: String(at("CODE") || "").trim().toUpperCase(),
     name: String(at("NAME") || "").trim(),
     pax: Math.max(1, parseInt(at("PAX"), 10) || 1),
     side: String(at("SIDE") || "").trim() || "Both",
@@ -90,16 +97,29 @@ function listGuests_(){
   if(lastRow < 2) return [];
   const width = Math.max(sh.getLastColumn(), HEADERS.length);
   const vals = sh.getRange(2, 1, lastRow - 1, width).getDisplayValues();
-  return vals.map(v => rowToGuest_(map, v)).filter(g => g.name !== "");
+  return vals.map(v => rowToGuest_(map, v)).filter(g => g.code !== "" && g.name !== "");
 }
 
-function findRow_(sh, map, name){
+function findRow_(sh, map, code){
+  const n = normCode_(code);
+  if(!n || map.CODE < 0) return -1;
+  const lastRow = sh.getLastRow();
+  if(lastRow < 2) return -1;
+  const codes = sh.getRange(2, map.CODE + 1, lastRow - 1, 1).getDisplayValues().flat();
+  for(let i = 0; i < codes.length; i++){
+    if(normCode_(codes[i]) === n) return i + 2; // 1-indexed row
+  }
+  return -1;
+}
+
+function findRowByName_(sh, map, name){
   const n = norm_(name);
+  if(!n || map.NAME < 0) return -1;
   const lastRow = sh.getLastRow();
   if(lastRow < 2) return -1;
   const names = sh.getRange(2, map.NAME + 1, lastRow - 1, 1).getDisplayValues().flat();
   for(let i = 0; i < names.length; i++){
-    if(norm_(names[i]) === n) return i + 2; // 1-indexed row
+    if(norm_(names[i]) === n) return i + 2;
   }
   return -1;
 }
@@ -126,22 +146,32 @@ function checkAdmin_(key){
   return key === ADMIN_KEY;
 }
 
-// Run once from the editor to reset headers + drop stray columns (ATTENDING, UpdatedAt, dups).
+// Run once from the editor: adds any missing headers (e.g. CODE) without touching data.
 function setup(){
   const sh = sheet_();
-  sh.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
-  // delete any columns beyond the 8 canonical ones (cleans repeated UpdatedAt adds)
-  while(sh.getMaxColumns() > HEADERS.length){
-    sh.deleteColumn(HEADERS.length + 1);
-  }
   colMap_(sh);
+}
+
+// Code-only lookup: exact match, no suggestions (codes must not enumerate names).
+function lookupByCode_(code){
+  const q = normCode_(code);
+  if(!q) return null;
+  const all = listGuests_();
+  return all.find(g => normCode_(g.code) === q) || null;
 }
 
 function doGet(e){
   try{
     const p = (e && e.parameter) || {};
     const cb = p.callback || p.jsonp || null;
-    if(p.action === "lookup" && p.name){
+    if(p.action === "lookup" && (p.code || p.name)){
+      // Preferred: code lookup (exact only — never list similar codes/names)
+      if(p.code){
+        const hit = lookupByCode_(p.code);
+        if(hit) return out_({ ok:true, guest:hit }, cb);
+        return out_({ ok:false, error:"not found" }, cb);
+      }
+      // Legacy fallback while old clients still send names (remove once migrated)
       const q = norm_(p.name);
       const all = listGuests_();
       const exact = all.find(g => norm_(g.name) === q);
@@ -173,8 +203,10 @@ function doPost(e){
     if(action === "rsvp"){
       const sh = sheet_();
       const map = colMap_(sh);
-      const r = findRow_(sh, map, body.name || "");
-      if(r < 0) return out_({ ok:false, error:"name not on list" });
+      // CODE is the key; fall back to name only for legacy clients
+      let r = body.code ? findRow_(sh, map, body.code) : -1;
+      if(r < 0 && body.name) r = findRowByName_(sh, map, body.name);
+      if(r < 0) return out_({ ok:false, error:"code not on list" });
       const st = readStatus_(body.status);
       if(st === "declined"){
         setCell_(sh, r, map, "STATUS", "Declined");
@@ -197,14 +229,20 @@ function doPost(e){
       if(!checkAdmin_(body.key)) return out_({ ok:false, error:"bad key" });
       const sh = sheet_();
       const map = colMap_(sh);
-      const r = findRow_(sh, map, (body.guest && body.guest.name) || body.name || "");
+      const code = (body.guest && body.guest.code) || body.code || "";
+      const r = findRow_(sh, map, code);
       if(action === "delete"){
         if(r > 0) sh.deleteRow(r);
+        else if(body.name || (body.guest && body.guest.name)){
+          const rn = findRowByName_(sh, map, body.name || body.guest.name);
+          if(rn > 0) sh.deleteRow(rn);
+        }
         SpreadsheetApp.flush();
         return out_({ ok:true });
       }
       const g = body.guest || {};
       const vals = {
+        CODE: String(g.code || "").trim().toUpperCase(),
         NAME: String(g.name || "").trim(),
         PAX: Math.max(1, parseInt(g.pax, 10) || 1),
         SIDE: String(g.side || "Both"),
@@ -214,6 +252,7 @@ function doPost(e){
         CONTACT: String(g.contact || ""),
         MESSAGE: String(g.message || "")
       };
+      if(!vals.CODE) return out_({ ok:false, error:"code required" });
       if(!vals.NAME) return out_({ ok:false, error:"name required" });
       if(r > 0){
         // write per-column by name — safe even if sheet order differs

@@ -33,10 +33,10 @@
         <button class="btn small" id="addBtn">+ Add Guest</button>
       </div>
       <div style="overflow:auto"><table>
-        <thead><tr><th>Name</th><th>Pax</th><th>Seats</th><th>Status</th><th>Companions</th><th>Table</th><th>Action</th></tr></thead>
+        <thead><tr><th>Code</th><th>Name</th><th>Pax</th><th>Seats</th><th>Status</th><th>Companions</th><th>Table</th><th>Action</th></tr></thead>
         <tbody id="rows"></tbody>
       </table></div>
-      <p class="muted" style="font-size:13px">Guests find their invitation by typing their name (case doesn't matter). Add every invited name here — names not on this list can't RSVP.</p>
+      <p class="muted" style="font-size:13px">Guests unlock with their invitation <b>code</b> (case doesn't matter). Every row needs a unique code — names may repeat, codes may not.</p>
     </div>
   </div>
 
@@ -44,6 +44,11 @@
   <div id="modal" style="display:none;position:fixed;inset:0;background:rgba(58,13,20,.55);z-index:50;align-items:center;justify-content:center;padding:16px">
     <div class="card" style="width:min(480px,94vw);max-height:90vh;overflow:auto">
       <div class="kicker" id="mTitle">Add guest</div>
+      <label>Invitation Code (unique — guest types this)</label>
+      <div class="row">
+        <input id="mCode" placeholder="e.g. CF4-K7P" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase;flex:1" />
+        <button class="btn small ghost" id="mGenCode" type="button" title="Generate from initials + pax">Generate</button>
+      </div>
       <label>Guest / Family Name</label>
       <input id="mName" placeholder="Reyes Family" />
       <div class="row">
