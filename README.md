@@ -1,6 +1,6 @@
 # Jess & Ara Wedding — Invitation & RSVP • 12.19.2026
 
-Code entry: **only invitation codes can RSVP** (case-insensitive, dashes ignored).
+Code entry: **only invitation codes can RSVP** (case-insensitive).
 Guests type their code → the whole site unlocks → they confirm seats.
 
 ## Pages
@@ -10,7 +10,7 @@ Guests type their code → the whole site unlocks → they confirm seats.
 
 ## Guest list format
 Sheet tab `GuestList`: `CODE | NAME | PAX | SIDE | TABLE | STATUS | COMPANIONS | CONTACT | MESSAGE`
-- CODE is the key (unique, e.g. `CF4-K7P`). STATUS accepts Attending/Confirmed/Declined/Pending (any case). COMPANIONS joined with `"; "`.
+- CODE is the key (unique, e.g. `CF4K7P`). STATUS accepts Attending/Confirmed/Declined/Pending (any case). COMPANIONS joined with `"; "`.
 - Until `GAS_URL` is set, the site runs on `localStorage` demo data (`data.js` → `SEED_GUESTS`).
 
 ## Run locally
@@ -20,7 +20,7 @@ npx serve .
 # or
 python -m http.server 3000
 ```
-Open http://localhost:3000 — try code `CF4-K7P` (any casing, dash optional).
+Open http://localhost:3000 — try code `CF4K7P` (any casing).
 
 ## Deploy to Vercel
 Static site, no build needed.

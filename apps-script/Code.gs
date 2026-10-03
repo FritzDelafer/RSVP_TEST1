@@ -6,10 +6,10 @@
  * 2. Delete everything in Code.gs → paste this whole file → Save (Ctrl+S).
  * 3. In the SHEET tab "GuestList": make sure row 1 has a CODE column.
  *    Easiest: insert a new column A, put "CODE" in A1, and fill one code
- *    per guest (e.g. CF4-K7P). Canonical order:
+ *    per guest (e.g. CF4K7P). Canonical order:
  *    CODE | NAME | PAX | SIDE | TABLE | STATUS | COMPANIONS | CONTACT | MESSAGE
  *    (Column order is flexible — the script maps by header name. Codes are
- *    matched case-insensitively, dashes/spaces ignored.)
+ *    matched case-insensitively, spaces ignored.)
  * 4. Pick function "setup" → Run once → authorize. This adds any missing
  *    headers without touching your data.
  * 5. Deploy → New deployment → Web app (Execute as: Me, Who has access: Anyone)
@@ -242,7 +242,7 @@ function doPost(e){
       }
       const g = body.guest || {};
       const vals = {
-        CODE: String(g.code || "").trim().toUpperCase(),
+        CODE: String(g.code || "").toUpperCase().replace(/[^A-Z0-9]/g, ""),
         NAME: String(g.name || "").trim(),
         PAX: Math.max(1, parseInt(g.pax, 10) || 1),
         SIDE: String(g.side || "Both"),

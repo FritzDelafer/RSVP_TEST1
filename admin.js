@@ -4,7 +4,7 @@ function normCode(s){
   if(window.normCode) return window.normCode(s);
   return String(s == null ? "" : s).toUpperCase().replace(/[^A-Z0-9]/g, "");
 }
-function cleanCode(s){ return String(s || "").trim().toUpperCase().replace(/\s+/g, ""); }
+function cleanCode(s){ return String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); }
 function normalizeGuest(g){
   const comps = Array.isArray(g.companions)
     ? g.companions
@@ -220,7 +220,7 @@ function openModal(code){
   codeEl.value = g ? g.code : "";
   codeEl.disabled = !!g; // CODE is the key — locked on edit (delete + re-add to change it)
   codeEl.title = g ? "Code is locked on edit — delete + re-add to change it" : "Unique per guest. Generate or type your own.";
-  codeEl.placeholder = "e.g. CF4-K7P";
+  codeEl.placeholder = "e.g. CF4K7P";
   document.getElementById("mName").value = g ? g.name : "";
   document.getElementById("mPax").value = g ? g.pax : 2;
   document.getElementById("mSide").value = g ? g.side : "Bride";
@@ -255,7 +255,7 @@ document.getElementById("mSave").onclick = async ()=>{
     document.getElementById("mCode").value = code;
   }
   if(!code){ msg.innerHTML = `<div class="error">Code is required — hit Generate.</div>`; return; }
-  if(!/^[A-Z0-9-]{3,20}$/.test(code)){ msg.innerHTML = `<div class="error">Code must be 3–20 letters/numbers (dashes ok).</div>`; return; }
+  if(!/^[A-Z0-9]{3,20}$/.test(code)){ msg.innerHTML = `<div class="error">Code must be 3–20 letters/numbers, no spaces.</div>`; return; }
   if(!name){ msg.innerHTML = `<div class="error">Name is required.</div>`; return; }
   if(status === "declined") companions = [];
 

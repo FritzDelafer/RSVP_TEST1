@@ -1,6 +1,6 @@
-// Guest list — keyed by CODE (invitation code). Case-insensitive, dashes/spaces ignored.
+// Guest list — keyed by CODE (invitation code). Case-insensitive, spaces ignored.
 // Mirrors Google Sheet tab "GuestList": CODE | NAME | PAX | SIDE | TABLE | STATUS | COMPANIONS | CONTACT | MESSAGE
-// Code scheme: INITIALS + PAX + "-" + 3 random chars (e.g. CF4-K7P). Guests type the code to unlock.
+// Code scheme: INITIALS + PAX + 3 random chars (e.g. CF4K7P). Guests type the code to unlock.
 // Seats used = 1 + companions.length when Attending, 0 when Declined.
 window.GAS_URL = "https://script.google.com/macros/s/AKfycbzqwmcSZ1AspOcdxFRMsNK8bPhn9Jl6Q42k0lyqU2KYnACjbvkYbZzx92fFtzrkVZOI/exec";
 window.SHEET_TAB = "GuestList";
@@ -27,13 +27,13 @@ window.gasPost = async function (body) {
 };
 window.usingGas = function () { return !!(window.GAS_URL && window.GAS_URL.indexOf("/exec") > 0); };
 
-// Normalize invitation codes: uppercase, ignore dashes/spaces (CF4-K7P == cf4k7p)
+// Normalize invitation codes: uppercase, alphanumeric only (CF4K7P == cf4 k7p)
 window.normCode = function (s) {
   return String(s == null ? "" : s).toUpperCase().replace(/[^A-Z0-9]/g, "");
 };
 
-// Auto-generate a code: INITIALS (up to 3 letters) + PAX + "-" + 3 random chars.
-// e.g. "Canto Family", 4 -> "CF4-K7P". Unambiguous alphabet (no 0/O, 1/I/L).
+// Auto-generate a code: INITIALS (up to 3 letters) + PAX + 3 random chars.
+// e.g. "Canto Family", 4 -> "CF4K7P". Unambiguous alphabet (no 0/O, 1/I/L).
 window.makeCode = function (name, pax) {
   const words = String(name || "").split(/[\s._-]+/).filter(Boolean).slice(0, 4);
   let initials = words.map(w => (w[0] || "").toUpperCase()).join("").replace(/[^A-Z]/g, "");
@@ -49,18 +49,18 @@ window.makeCode = function (name, pax) {
   } else {
     for (let i = 0; i < 3; i++) rand += abc[Math.floor(Math.random() * abc.length)];
   }
-  return initials + n + "-" + rand;
+  return initials + n + rand;
 };
 
 window.SEED_GUESTS = [
-  { code: "CF4-K7P", name: "Canto Family", pax: 4, side: "Groom", table: "Table 1", status: "pending", companions: [], contact: "", message: "" },
-  { code: "AF4-M3Q", name: "Adra Family", pax: 4, side: "Bride", table: "Table 2", status: "pending", companions: [], contact: "", message: "" },
-  { code: "JO1-T8R", name: "Jaira Ondoy", pax: 1, side: "Bride", table: "Table 3", status: "pending", companions: [], contact: "", message: "" },
-  { code: "SPC2-X4D", name: "Samuel Paul Canto", pax: 2, side: "Groom", table: "Table 4", status: "pending", companions: [], contact: "", message: "" },
-  { code: "MPC2-J9F", name: "Ma. Pauline Canto", pax: 2, side: "Bride", table: "Table 1", status: "attending", companions: ["John Fritz Delafer"], contact: "9123123123", message: "yeahhh" },
-  { code: "JA1-Q2W", name: "Joshua Arquiza", pax: 1, side: "Groom", table: "Table 5", status: "declined", companions: [], contact: "", message: "Sorry, can't make it!" },
-  { code: "IF3-H6N", name: "Ibeas Family", pax: 3, side: "Both", table: "Table 6", status: "pending", companions: [], contact: "", message: "" },
-  { code: "HCH2-B5V", name: "Hannah Claire Hicks", pax: 2, side: "Both", table: "Table 7", status: "pending", companions: [], contact: "", message: "" }
+  { code: "CF4K7P", name: "Canto Family", pax: 4, side: "Groom", table: "Table 1", status: "pending", companions: [], contact: "", message: "" },
+  { code: "AF4M3Q", name: "Adra Family", pax: 4, side: "Bride", table: "Table 2", status: "pending", companions: [], contact: "", message: "" },
+  { code: "JO1T8R", name: "Jaira Ondoy", pax: 1, side: "Bride", table: "Table 3", status: "pending", companions: [], contact: "", message: "" },
+  { code: "SPC2X4D", name: "Samuel Paul Canto", pax: 2, side: "Groom", table: "Table 4", status: "pending", companions: [], contact: "", message: "" },
+  { code: "MPC2J9F", name: "Ma. Pauline Canto", pax: 2, side: "Bride", table: "Table 1", status: "attending", companions: ["John Fritz Delafer"], contact: "9123123123", message: "yeahhh" },
+  { code: "JA1Q2W", name: "Joshua Arquiza", pax: 1, side: "Groom", table: "Table 5", status: "declined", companions: [], contact: "", message: "Sorry, can't make it!" },
+  { code: "IF3H6N", name: "Ibeas Family", pax: 3, side: "Both", table: "Table 6", status: "pending", companions: [], contact: "", message: "" },
+  { code: "HCH2B5V", name: "Hannah Claire Hicks", pax: 2, side: "Both", table: "Table 7", status: "pending", companions: [], contact: "", message: "" }
 ];
 // Seats used helper: shared by guest + admin views
 window.seatsUsed = function (g) {

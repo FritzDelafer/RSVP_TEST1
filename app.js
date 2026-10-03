@@ -11,7 +11,7 @@ function loadGuests() {
   return seed;
 }
 function saveGuests(g) { localStorage.setItem(LS_KEY, JSON.stringify(g)); }
-// invitation-code match: uppercase, ignore dashes/spaces
+// invitation-code match: uppercase, alphanumeric only
 function normCode(s){
   if(window.normCode) return window.normCode(s);
   return String(s == null ? "" : s).toUpperCase().replace(/[^A-Z0-9]/g, "");
