@@ -125,10 +125,15 @@ function unlock(g){
   renderCompanions();
   sel.onchange = renderCompanions;
   document.querySelectorAll('input[name="attend"]').forEach(r=>{
-    r.onchange = ()=>{ document.getElementById("attendFields").style.display =
-      document.querySelector('input[name="attend"]:checked').value==="yes" ? "block":"none"; };
+    r.onchange = ()=>{
+      const isYes = document.querySelector('input[name="attend"]:checked').value==="yes";
+      document.getElementById("attendFields").style.display = isYes ? "block":"none";
+      // Declining shows the gift guide below; accepting hides it again.
+      document.getElementById("declineGift").style.display = isYes ? "none":"block";
+    };
   });
   document.querySelector('input[name="attend"][value="yes"]').checked = true;
+  document.getElementById("declineGift").style.display = "none";
   document.getElementById("attendFields").style.display = "block";
   document.getElementById("contact").value = current.contact||"";
   document.getElementById("message").value = current.message||"";
