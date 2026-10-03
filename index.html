@@ -161,8 +161,20 @@
   </footer>
 </div>
 
-<script src="data.js?v=20261003d"></script>
-<script src="app.js?v=20261003d"></script>
+<script src="data.js?v=20261003e"></script>
+<script src="app.js?v=20261003e"></script>
+<script>
+  // Boot check: if app scripts were blocked (ad-blocker/network), say so visibly
+  // instead of leaving a dead button.
+  setTimeout(function(){
+    let ok = false;
+    try { ok = !!window.__rsvpReady; } catch(e){}
+    if(!ok){
+      const m = document.getElementById('nameMsg');
+      if(m) m.innerHTML = '<div class="error">Page scripts failed to load (blocker or network). Disable any ad-blocker for this page, or try another browser/device.</div>';
+    }
+  }, 4000);
+</script>
 <script>
   // envelope splash + music (starts on open tap, browsers require a gesture)
   const w = document.getElementById('welcome');

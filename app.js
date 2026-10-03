@@ -6,8 +6,9 @@ function loadGuests() {
     const raw = localStorage.getItem(LS_KEY);
     if (raw) return JSON.parse(raw);
   } catch {}
-  const seed = structuredClone(window.SEED_GUESTS);
-  localStorage.setItem(LS_KEY, JSON.stringify(seed));
+  let seed = [];
+  try { seed = structuredClone(window.SEED_GUESTS || []); } catch {}
+  try { localStorage.setItem(LS_KEY, JSON.stringify(seed)); } catch {}
   return seed;
 }
 function saveGuests(g) { localStorage.setItem(LS_KEY, JSON.stringify(g)); }
@@ -31,10 +32,18 @@ function tick(){
   set("cd-d",days); set("cd-h",String(h).padStart(2,"0"));
   set("cd-m",String(m).padStart(2,"0")); set("cd-s",String(s).padStart(2,"0"));
 }
-setInterval(tick, 1000); tick();
+setInterval(tick, 1000); try{ tick(); }catch(e){ console.warn(e); }
 
-document.getElementById("lookupBtn").addEventListener("click", lookup);
-document.getElementById("guestCode").addEventListener("keydown", e=>{ if(e.key==="Enter") lookup(); });
+// Guarded init: the button must work even if part of the page failed to load.
+(function initGate(){
+  try{
+    const btn = document.getElementById("lookupBtn");
+    const inp = document.getElementById("guestCode");
+    if(btn) btn.addEventListener("click", lookup);
+    if(inp) inp.addEventListener("keydown", e=>{ if(e.key==="Enter") lookup(); });
+    window.__rsvpReady = true;
+  }catch(e){ console.warn("gate init failed:", e); }
+})();
 
 async function lookup(){
   const raw = document.getElementById("guestCode").value;

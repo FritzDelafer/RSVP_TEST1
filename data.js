@@ -8,9 +8,16 @@ window.GAS_KEY = ""; // must match ADMIN_KEY in Code.gs (empty = no key needed)
 
 // Shared GAS helpers (used by app.js + admin.js). GET via fetch, POST as
 // text/plain to avoid CORS preflight on Apps Script web apps.
+// Timeouts included: a hanging request must never freeze the UI.
+function gasTimeout_(ms){
+  try{
+    if(window.AbortSignal && AbortSignal.timeout) return AbortSignal.timeout(ms);
+  }catch(e){}
+  return undefined;
+}
 window.gasGet = async function (params) {
   const qs = new URLSearchParams(params || {}).toString();
-  const res = await fetch(window.GAS_URL + (qs ? "?" + qs : ""), { cache: "no-store" });
+  const res = await fetch(window.GAS_URL + (qs ? "?" + qs : ""), { cache: "no-store", signal: gasTimeout_(15000) });
   if (!res.ok) throw new Error("GAS GET failed: " + res.status);
   return res.json();
 };
@@ -21,6 +28,7 @@ window.gasPost = async function (body) {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify(payload),
+    signal: gasTimeout_(20000),
   });
   if (!res.ok) throw new Error("GAS POST failed: " + res.status);
   return res.json();
