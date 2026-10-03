@@ -27,7 +27,7 @@
     <div class="card" style="margin-top:16px">
       <div class="toolbar">
         <input id="q" placeholder="Search name / code / table..." />
-        <select id="f"><option value="">All status</option><option value="confirmed">Confirmed</option><option value="declined">Declined</option><option value="pending">Pending</option></select>
+        <select id="f"><option value="">All status</option><option value="attending">Attending</option><option value="declined">Declined</option><option value="pending">Pending</option></select>
         <button class="btn small ghost" id="exportBtn">Export CSV</button>
         <button class="btn small ghost" id="resetBtn">Reset demo</button>
         <button class="btn small" id="addBtn">+ Add Guest</button>
@@ -50,6 +50,14 @@
         <div style="flex:1;min-width:100px"><label>Max seats (pax)</label><input id="mPax" type="number" min="1" max="20" value="2" /></div>
         <div style="flex:1;min-width:100px"><label>Side</label><select id="mSide"><option>Bride</option><option>Groom</option><option>Both</option></select></div>
         <div style="flex:1;min-width:100px"><label>Table</label><input id="mTable" placeholder="T-09" /></div>
+      </div>
+      <div class="row">
+        <div style="flex:1;min-width:100px"><label>Status</label><select id="mStatus"><option value="pending">Pending</option><option value="attending">Attending</option><option value="declined">Declined</option></select></div>
+        <div style="flex:2;min-width:160px"><label>Companions (separate with ; — 1 or more)</label><input id="mCompanions" placeholder="Juan; Maria" /></div>
+      </div>
+      <div class="row">
+        <div style="flex:1;min-width:140px"><label>Contact</label><input id="mContact" placeholder="0917-xxx-xxxx" /></div>
+        <div style="flex:2;min-width:160px"><label>Message</label><input id="mMessage" placeholder="Message to couple" /></div>
       </div>
       <div id="mMsg"></div>
       <div class="row" style="margin-top:14px">

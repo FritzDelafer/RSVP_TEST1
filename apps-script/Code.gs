@@ -1,30 +1,32 @@
 /**
  * Jess & Ara Wedding RSVP — Google Sheets backend.
  *
- * SETUP (one time, ~3 minutes):
- * 1. Open your "Guest List" spreadsheet → Extensions → Apps Script.
+ * SETUP (one time):
+ * 1. Open your spreadsheet → Extensions → Apps Script.
  * 2. Delete everything in Code.gs → paste this whole file → Save (Ctrl+S).
- * 3. (Optional) In the toolbar dropdown pick function "setup" → Run once →
- *    authorize with your Google account. This creates the "GuestList" tab
- *    with the right headers if missing.
- * 4. Deploy → New deployment → gear icon → Web app:
- *      Execute as: Me
- *      Who has access: Anyone
- *    → Deploy → Authorize → copy the URL ending in /exec
- * 5. Paste that URL to your developer (window.GAS_URL) to go live.
+ * 3. Pick function "setup" → Run once → authorize. This resets tab
+ *    "GuestList" headers to the 8 canonical columns and deletes stray
+ *    columns (e.g. repeated UpdatedAt / ATTENDING).
+ * 4. Make sure row 2+ matches: NAME | PAX | SIDE | TABLE | STATUS | COMPANIONS | CONTACT | MESSAGE
+ *    Example: Ma. Pauline Canto | 2 | Bride | Table 1 | Attending | John Fritz Delafer | 9123123123 | yeahhh
+ * 5. Deploy → New deployment → Web app (Execute as: Me, Who has access: Anyone)
+ *    → copy URL ending in /exec → paste as window.GAS_URL.
  *
  * Sheet tab: "GuestList"
- * Columns: NAME | PAX | SIDE | TABLE | STATUS | ATTENDING | COMPANIONS | CONTACT | MESSAGE | UpdatedAt
- * - Lookup is case-insensitive. STATUS accepts Attending/Confirmed/Declined/Pending (any case).
- * - COMPANIONS are stored joined with "; ".
+ * Columns (8): NAME | PAX | SIDE | TABLE | STATUS | COMPANIONS | CONTACT | MESSAGE
+ * - Lookup is case-insensitive. STATUS accepts Attending/Confirmed/Yes (=attending),
+ *   Declined/No (=declined), anything else (=pending). Stored as Attending/Declined/Pending.
+ * - COMPANIONS: one or more names joined with "; " (e.g. "Juan; Maria").
+ * - Seats used = 1 + companions count when Attending, 0 when Declined.
  * - If ADMIN_KEY below is set, list/upsert/delete require ?key= or body.key to match.
  */
 
 const TAB_NAME = "GuestList";
-const HEADERS = ["NAME","PAX","SIDE","TABLE","STATUS","ATTENDING","COMPANIONS","CONTACT","MESSAGE","UpdatedAt"];
+const HEADERS = ["NAME","PAX","SIDE","TABLE","STATUS","COMPANIONS","CONTACT","MESSAGE"];
 const ADMIN_KEY = ""; // optional: set e.g. "ja-secret-2026", then admin calls must send it
 
 function norm_(s){ return String(s == null ? "" : s).toLowerCase().trim().replace(/\s+/g, " "); }
+function normHeader_(s){ return norm_(s).toUpperCase().replace(/[^A-Z]/g, ""); }
 
 function sheet_(){
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -34,45 +36,50 @@ function sheet_(){
 }
 
 function colMap_(sh){
-  const lastCol = Math.max(sh.getLastColumn(), 1);
-  const head = sh.getRange(1, 1, 1, lastCol).getDisplayValues()[0].map(h => norm_(h).toUpperCase().replace(/\s+/g,""));
+  const lastCol = Math.max(sh.getLastColumn(), HEADERS.length);
+  const head = sh.getRange(1, 1, 1, lastCol).getDisplayValues()[0].map(normHeader_);
   const map = {};
   HEADERS.forEach(h => { map[h] = head.indexOf(h); });
-  // add any missing headers at the end
-  let col = lastCol;
+  // add any missing headers at the end (once — normalized compare fixes repeat-add bug)
+  let col = sh.getLastColumn();
   HEADERS.forEach(h => {
     if(map[h] < 0){ col++; sh.getRange(1, col).setValue(h); map[h] = col - 1; }
   });
   return map;
 }
 
+function parseCompanions_(v){
+  if(Array.isArray(v)) return v.map(c=>String(c).trim()).filter(Boolean);
+  return String(v == null ? "" : v).split(/[;,\n]+/).map(c => c.trim()).filter(Boolean);
+}
+function joinCompanions_(arr){
+  return (arr || []).map(c=>String(c).trim()).filter(Boolean).join("; ");
+}
+
 function readStatus_(s){
   const n = norm_(s);
-  if(n === "confirmed" || n === "attending" || n === "yes") return "confirmed";
-  if(n === "declined" || n === "no") return "declined";
+  if(n === "attending" || n === "confirmed" || n === "confirm" || n === "yes" || n === "attends") return "attending";
+  if(n === "declined" || n === "decline" || n === "no") return "declined";
   return "pending";
 }
 function writeStatus_(s){
-  const n = norm_(s);
-  if(n === "confirmed" || n === "attending") return "Confirmed";
+  const n = readStatus_(s);
+  if(n === "attending") return "Attending";
   if(n === "declined") return "Declined";
   return "Pending";
 }
 
 function rowToGuest_(map, vals){
   const at = h => (map[h] >= 0 ? vals[map[h]] : "");
-  const comps = String(at("COMPANIONS") || "").split(";").map(c => c.trim()).filter(Boolean);
   return {
     name: String(at("NAME") || "").trim(),
     pax: Math.max(1, parseInt(at("PAX"), 10) || 1),
     side: String(at("SIDE") || "").trim() || "Both",
     table: String(at("TABLE") || "").trim(),
     status: readStatus_(at("STATUS")),
-    attending: parseInt(at("ATTENDING"), 10) || 0,
-    companions: comps,
+    companions: parseCompanions_(at("COMPANIONS")),
     contact: String(at("CONTACT") || "").trim(),
-    message: String(at("MESSAGE") || "").trim(),
-    updatedAt: String(at("UpdatedAt") || "").trim() || null
+    message: String(at("MESSAGE") || "").trim()
   };
 }
 
@@ -97,6 +104,11 @@ function findRow_(sh, map, name){
   return -1;
 }
 
+function setCell_(sh, r, map, header, value){
+  if(map[header] < 0) return;
+  sh.getRange(r, map[header] + 1).setValue(value);
+}
+
 function out_(obj, callback){
   let t;
   if(callback){
@@ -114,9 +126,14 @@ function checkAdmin_(key){
   return key === ADMIN_KEY;
 }
 
-// Run once from the editor to create tab + headers.
+// Run once from the editor to reset headers + drop stray columns (ATTENDING, UpdatedAt, dups).
 function setup(){
   const sh = sheet_();
+  sh.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+  // delete any columns beyond the 8 canonical ones (cleans repeated UpdatedAt adds)
+  while(sh.getMaxColumns() > HEADERS.length){
+    sh.deleteColumn(HEADERS.length + 1);
+  }
   colMap_(sh);
 }
 
@@ -158,22 +175,20 @@ function doPost(e){
       const map = colMap_(sh);
       const r = findRow_(sh, map, body.name || "");
       if(r < 0) return out_({ ok:false, error:"name not on list" });
-      const pax = Math.max(1, parseInt(sh.getRange(r, map.PAX + 1).getDisplayValue(), 10) || 1);
-      const st = norm_(body.status);
+      const st = readStatus_(body.status);
       if(st === "declined"){
-        sh.getRange(r, map.STATUS + 1).setValue("Declined");
-        sh.getRange(r, map.ATTENDING + 1).setValue(0);
-        sh.getRange(r, map.COMPANIONS + 1).setValue("");
+        setCell_(sh, r, map, "STATUS", "Declined");
+        setCell_(sh, r, map, "COMPANIONS", "");
+      } else if(st === "attending"){
+        const comps = parseCompanions_(body.companions);
+        setCell_(sh, r, map, "STATUS", "Attending");
+        setCell_(sh, r, map, "COMPANIONS", joinCompanions_(comps));
       } else {
-        const count = Math.max(1, Math.min(pax, parseInt(body.attending, 10) || pax));
-        const comps = Array.isArray(body.companions) ? body.companions : [];
-        sh.getRange(r, map.STATUS + 1).setValue("Confirmed");
-        sh.getRange(r, map.ATTENDING + 1).setValue(count);
-        sh.getRange(r, map.COMPANIONS + 1).setValue(comps.map(c=>String(c).trim()).filter(Boolean).join("; "));
+        setCell_(sh, r, map, "STATUS", "Pending");
+        setCell_(sh, r, map, "COMPANIONS", joinCompanions_(parseCompanions_(body.companions)));
       }
-      sh.getRange(r, map.CONTACT + 1).setValue(String(body.contact || "").trim());
-      sh.getRange(r, map.MESSAGE + 1).setValue(String(body.message || "").trim());
-      sh.getRange(r, map.UpdatedAt + 1).setValue(new Date().toISOString());
+      setCell_(sh, r, map, "CONTACT", String(body.contact || "").trim());
+      setCell_(sh, r, map, "MESSAGE", String(body.message || "").trim());
       SpreadsheetApp.flush();
       return out_({ ok:true });
     }
@@ -189,23 +204,24 @@ function doPost(e){
         return out_({ ok:true });
       }
       const g = body.guest || {};
-      const row = HEADERS.map(h => {
-        switch(h){
-          case "NAME": return String(g.name || "").trim();
-          case "PAX": return Math.max(1, parseInt(g.pax, 10) || 1);
-          case "SIDE": return String(g.side || "Both");
-          case "TABLE": return String(g.table || "");
-          case "STATUS": return writeStatus_(g.status);
-          case "ATTENDING": return parseInt(g.attending, 10) || 0;
-          case "COMPANIONS": return (Array.isArray(g.companions) ? g.companions : String(g.companions||"").split(";")).map(c=>String(c).trim()).filter(Boolean).join("; ");
-          case "CONTACT": return String(g.contact || "");
-          case "MESSAGE": return String(g.message || "");
-          case "UpdatedAt": return g.updatedAt || new Date().toISOString();
-          default: return "";
-        }
-      });
-      if(r > 0) sh.getRange(r, 1, 1, HEADERS.length).setValues([row]);
-      else sh.appendRow(row);
+      const vals = {
+        NAME: String(g.name || "").trim(),
+        PAX: Math.max(1, parseInt(g.pax, 10) || 1),
+        SIDE: String(g.side || "Both"),
+        TABLE: String(g.table || ""),
+        STATUS: writeStatus_(g.status),
+        COMPANIONS: joinCompanions_(parseCompanions_(g.companions)),
+        CONTACT: String(g.contact || ""),
+        MESSAGE: String(g.message || "")
+      };
+      if(!vals.NAME) return out_({ ok:false, error:"name required" });
+      if(r > 0){
+        // write per-column by name — safe even if sheet order differs
+        HEADERS.forEach(h => setCell_(sh, r, map, h, vals[h]));
+      } else {
+        // append in canonical order
+        sh.appendRow(HEADERS.map(h => vals[h]));
+      }
       SpreadsheetApp.flush();
       return out_({ ok:true });
     }
