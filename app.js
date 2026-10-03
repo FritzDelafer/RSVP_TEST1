@@ -12,9 +12,11 @@ function loadGuests() {
   return seed;
 }
 function saveGuests(g) { localStorage.setItem(LS_KEY, JSON.stringify(g)); }
-// invitation-code match: uppercase, alphanumeric only
+// invitation-code match: uppercase, alphanumeric only.
+// NOTE: must not delegate to window.normCode — this very function IS
+// window.normCode (top-level function declarations become window props),
+// so that would recurse forever.
 function normCode(s){
-  if(window.normCode) return window.normCode(s);
   return String(s == null ? "" : s).toUpperCase().replace(/[^A-Z0-9]/g, "");
 }
 function findByCode(list, code){ const n = normCode(code); return list.findIndex(x=>normCode(x.code)===n); }

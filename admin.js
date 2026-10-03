@@ -1,7 +1,7 @@
 const LS_KEY = "wedding-rsvp-guests-v5";
 const ADMIN_PW = "admin123"; // change me
 function normCode(s){
-  if(window.normCode) return window.normCode(s);
+  // local-only: this function IS window.normCode, so never delegate to it.
   return String(s == null ? "" : s).toUpperCase().replace(/[^A-Z0-9]/g, "");
 }
 function cleanCode(s){ return String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); }
